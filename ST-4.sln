@@ -1,12 +1,25 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BugPro", "BugPro\BugPro.csproj", "{6A8A37E0-6D07-4C10-A8AC-2A9E9E7F5B51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BugTests", "BugTests\BugTests.csproj", "{4F3D77C2-2C5E-4D97-8B28-3DF7D3F937A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A8A37E0-6D07-4C10-A8AC-2A9E9E7F5B51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A8A37E0-6D07-4C10-A8AC-2A9E9E7F5B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A8A37E0-6D07-4C10-A8AC-2A9E9E7F5B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A8A37E0-6D07-4C10-A8AC-2A9E9E7F5B51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F3D77C2-2C5E-4D97-8B28-3DF7D3F937A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F3D77C2-2C5E-4D97-8B28-3DF7D3F937A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F3D77C2-2C5E-4D97-8B28-3DF7D3F937A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F3D77C2-2C5E-4D97-8B28-3DF7D3F937A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
