@@ -10,213 +10,266 @@ public class BugTests
     private Bug _bug = null!;
 
     [TestInitialize]
-    public void Setup()
+    public void CreateFreshBug()
     {
         _bug = new Bug();
     }
 
     [TestMethod]
-    public void Bug_InitialState_ShouldBeNew()
+    public void CreatedBug_StaysInNewQueue()
     {
-        Assert.AreEqual(Bug.State.New, _bug.CurrentState);
+        AssertState(Bug.State.New);
     }
 
     [TestMethod]
-    public void Assign_FromNew_ShouldChangeToAssigned()
+    public void Assign_NewBug_MovesToAssigned()
     {
-        _bug.Assign("Tester1");
-        Assert.AreEqual(Bug.State.Assigned, _bug.CurrentState);
+        AssignToDeveloper();
+
+        AssertState(Bug.State.Assigned);
     }
 
     [TestMethod]
-    public void Reject_FromNew_ShouldChangeToRejected()
+    public void Reject_NewBug_SendsItToRejectedBucket()
     {
         _bug.Reject();
-        Assert.AreEqual(Bug.State.Rejected, _bug.CurrentState);
+
+        AssertState(Bug.State.Rejected);
     }
 
     [TestMethod]
-    public void Defer_FromNew_ShouldChangeToDeferred()
+    public void Defer_NewBug_PutsItOnHold()
     {
         _bug.Defer();
-        Assert.AreEqual(Bug.State.Deferred, _bug.CurrentState);
+
+        AssertState(Bug.State.Deferred);
     }
 
     [TestMethod]
-    public void StartProgress_FromAssigned_ShouldChangeToInProgress()
+    public void StartProgress_AssignedBug_OpensDevelopment()
     {
-        _bug.Assign("Dev1");
+        AssignToDeveloper();
         _bug.StartProgress();
-        Assert.AreEqual(Bug.State.InProgress, _bug.CurrentState);
+
+        AssertState(Bug.State.InProgress);
     }
 
     [TestMethod]
-    public void Fix_FromInProgress_ShouldChangeToFixed()
+    public void Fix_InProgressBug_WaitsForVerification()
     {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
+        MoveToDevelopment();
         _bug.Fix();
-        Assert.AreEqual(Bug.State.Fixed, _bug.CurrentState);
+
+        AssertState(Bug.State.Fixed);
     }
 
     [TestMethod]
-    public void Verify_FromFixed_ShouldChangeToVerified()
+    public void Verify_FixedBug_ConfirmsTesterCheck()
     {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
+        MoveToFixed();
         _bug.Verify();
-        Assert.AreEqual(Bug.State.Verified, _bug.CurrentState);
+
+        AssertState(Bug.State.Verified);
     }
 
     [TestMethod]
-    public void Close_FromVerified_ShouldChangeToClosed()
+    public void Close_VerifiedBug_FinishesWorkflow()
     {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
-        _bug.Verify();
+        MoveToVerified();
         _bug.Close();
-        Assert.AreEqual(Bug.State.Closed, _bug.CurrentState);
+
+        AssertState(Bug.State.Closed);
     }
 
     [TestMethod]
-    public void Reopen_FromClosed_ShouldChangeToReopened()
+    public void Reopen_ClosedBug_ReturnsToReopenedState()
     {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
-        _bug.Verify();
-        _bug.Close();
+        MoveToClosed();
         _bug.Reopen();
-        Assert.AreEqual(Bug.State.Reopened, _bug.CurrentState);
+
+        AssertState(Bug.State.Reopened);
     }
 
     [TestMethod]
-    public void Reject_FromAssigned_ShouldChangeToRejected()
+    public void Reject_AssignedBug_EndsAsRejected()
     {
-        _bug.Assign("Dev1");
+        AssignToDeveloper();
         _bug.Reject();
-        Assert.AreEqual(Bug.State.Rejected, _bug.CurrentState);
+
+        AssertState(Bug.State.Rejected);
     }
 
     [TestMethod]
-    public void Reactivate_FromRejected_ShouldChangeToNew()
+    public void Reactivate_RejectedBug_RestartsFromNew()
     {
         _bug.Reject();
         _bug.Reactivate();
-        Assert.AreEqual(Bug.State.New, _bug.CurrentState);
+
+        AssertState(Bug.State.New);
     }
 
     [TestMethod]
-    public void Reactivate_FromDeferred_ShouldChangeToNew()
+    public void Reactivate_DeferredBug_RestartsFromNew()
     {
         _bug.Defer();
         _bug.Reactivate();
-        Assert.AreEqual(Bug.State.New, _bug.CurrentState);
+
+        AssertState(Bug.State.New);
     }
 
     [TestMethod]
-    public void Reopen_FromFixed_ShouldChangeToReopened()
+    public void Reopen_FixedBug_RoutesBackForWork()
     {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
+        MoveToFixed();
         _bug.Reopen();
-        Assert.AreEqual(Bug.State.Reopened, _bug.CurrentState);
+
+        AssertState(Bug.State.Reopened);
     }
 
     [TestMethod]
-    public void Reopen_FromVerified_ShouldChangeToReopened()
+    public void Reopen_VerifiedBug_RoutesBackForWork()
     {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
-        _bug.Verify();
+        MoveToVerified();
         _bug.Reopen();
-        Assert.AreEqual(Bug.State.Reopened, _bug.CurrentState);
+
+        AssertState(Bug.State.Reopened);
     }
 
     [TestMethod]
-    public void Reject_FromReopened_ShouldChangeToRejected()
+    public void Assign_ReopenedBug_ReturnsToAssigned()
     {
+        MoveToClosed();
+        _bug.Reopen();
+        _bug.Assign("Anton");
+
+        AssertState(Bug.State.Assigned);
+    }
+
+    [TestMethod]
+    public void Reject_ReopenedBug_ClosesAsRejected()
+    {
+        MoveToClosed();
+        _bug.Reopen();
         _bug.Reject();
-        _bug.Reactivate();
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
-        _bug.Verify();
-        _bug.Close();
+
+        AssertState(Bug.State.Rejected);
+    }
+
+    [TestMethod]
+    public void MainPositiveScenario_EndsInClosedState()
+    {
+        MoveToClosed();
+
+        AssertState(Bug.State.Closed);
+    }
+
+    [TestMethod]
+    public void Defer_AssignedBug_PausesBeforeDevelopment()
+    {
+        AssignToDeveloper();
+        _bug.Defer();
+
+        AssertState(Bug.State.Deferred);
+    }
+
+    [TestMethod]
+    public void Defer_InProgressBug_PausesActiveWork()
+    {
+        MoveToDevelopment();
+        _bug.Defer();
+
+        AssertState(Bug.State.Deferred);
+    }
+
+    [TestMethod]
+    public void StartProgress_NewBug_IsRejectedByStateless()
+    {
+        AssertInvalidTransition(() => _bug.StartProgress());
+    }
+
+    [TestMethod]
+    public void Fix_AssignedBug_IsRejectedByStateless()
+    {
+        AssignToDeveloper();
+
+        AssertInvalidTransition(() => _bug.Fix());
+    }
+
+    [TestMethod]
+    public void Verify_InProgressBug_IsRejectedByStateless()
+    {
+        MoveToDevelopment();
+
+        AssertInvalidTransition(() => _bug.Verify());
+    }
+
+    [TestMethod]
+    public void Close_FixedBug_IsRejectedByStateless()
+    {
+        MoveToFixed();
+
+        AssertInvalidTransition(() => _bug.Close());
+    }
+
+    [TestMethod]
+    public void Reject_ClosedBug_IsRejectedByStateless()
+    {
+        MoveToClosed();
+
+        AssertInvalidTransition(() => _bug.Reject());
+    }
+
+    [TestMethod]
+    public void Reopen_NewBug_IsRejectedByStateless()
+    {
+        AssertInvalidTransition(() => _bug.Reopen());
+    }
+
+    [TestMethod]
+    public void Close_ReopenedBug_IsRejectedByStateless()
+    {
+        MoveToFixed();
         _bug.Reopen();
-        _bug.Reject();
-        Assert.AreEqual(Bug.State.Rejected, _bug.CurrentState);
+
+        AssertInvalidTransition(() => _bug.Close());
     }
 
-    [TestMethod]
-    public void FullHappyPath_ShouldEndInClosed()
+    private void AssignToDeveloper()
     {
-        _bug.Assign("Tester");
+        _bug.Assign("Ivan");
+    }
+
+    private void MoveToDevelopment()
+    {
+        AssignToDeveloper();
         _bug.StartProgress();
+    }
+
+    private void MoveToFixed()
+    {
+        MoveToDevelopment();
         _bug.Fix();
+    }
+
+    private void MoveToVerified()
+    {
+        MoveToFixed();
         _bug.Verify();
+    }
+
+    private void MoveToClosed()
+    {
+        MoveToVerified();
         _bug.Close();
-        Assert.AreEqual(Bug.State.Closed, _bug.CurrentState);
     }
 
-    [TestMethod]
-    public void StartProgress_FromNew_ShouldThrowException()
+    private void AssertState(Bug.State expected)
     {
-        Assert.ThrowsException<InvalidOperationException>(() => _bug.StartProgress());
+        Assert.AreEqual(expected, _bug.CurrentState);
     }
 
-    [TestMethod]
-    public void Fix_FromAssigned_ShouldThrowException()
+    private static void AssertInvalidTransition(Action action)
     {
-        _bug.Assign("Dev1");
-        Assert.ThrowsException<InvalidOperationException>(() => _bug.Fix());
-    }
-
-    [TestMethod]
-    public void Verify_FromInProgress_ShouldThrowException()
-    {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        Assert.ThrowsException<InvalidOperationException>(() => _bug.Verify());
-    }
-
-    [TestMethod]
-    public void Close_FromFixed_ShouldThrowException()
-    {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
-        Assert.ThrowsException<InvalidOperationException>(() => _bug.Close());
-    }
-
-    [TestMethod]
-    public void Reject_FromClosed_ShouldThrowException()
-    {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
-        _bug.Verify();
-        _bug.Close();
-        Assert.ThrowsException<InvalidOperationException>(() => _bug.Reject());
-    }
-
-    [TestMethod]
-    public void Reopen_FromNew_ShouldThrowException()
-    {
-        Assert.ThrowsException<InvalidOperationException>(() => _bug.Reopen());
-    }
-
-    [TestMethod]
-    public void Close_FromReopened_ShouldThrowException()
-    {
-        _bug.Assign("Dev1");
-        _bug.StartProgress();
-        _bug.Fix();
-        _bug.Reopen();
-        Assert.ThrowsException<InvalidOperationException>(() => _bug.Close());
+        Assert.ThrowsException<InvalidOperationException>(action);
     }
 }
